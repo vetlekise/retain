@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// LoadExam loads
+// LoadExam loads a file by unmarshaling and validating json.
 func LoadExam(file []byte) (ExamFile, error) {
 	var ef ExamFile
 
