@@ -113,39 +113,6 @@
           "url": "https://kubernetes.io/docs/concepts/configuration/configmap/"
         }
       ]
-    },
-    {
-      "id": "q5",
-      "type": "drag_drop",
-      "text": "Drag each Kubernetes resource to the box that best describes its primary purpose.",
-      "items": [
-        { "id": "i1", "text": "Pod" },
-        { "id": "i2", "text": "Service" },
-        { "id": "i3", "text": "ConfigMap" },
-        { "id": "i4", "text": "PersistentVolume" }
-      ],
-      "targets": [
-        { "id": "t1", "label": "Runs one or more containers" },
-        { "id": "t2", "label": "Exposes network access to Pods" },
-        { "id": "t3", "label": "Stores non-sensitive configuration" },
-        { "id": "t4", "label": "Provides durable storage" }
-      ],
-      "correct_answers": [
-        { "item": "i1", "target": "t1" },
-        { "item": "i2", "target": "t2" },
-        { "item": "i3", "target": "t3" },
-        { "item": "i4", "target": "t4" }
-      ],
-      "explanation": "Pods run containers, Services expose them over the network, ConfigMaps hold configuration data, and PersistentVolumes provide durable disk storage.",
-      "hints": [
-        "Think about what each resource's name implies about its job."
-      ],
-      "links": [
-        {
-          "label": "Kubernetes Docs: Workloads & Services overview",
-          "url": "https://kubernetes.io/docs/concepts/"
-        }
-      ]
     }
   ]
 }
