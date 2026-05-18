@@ -1,5 +1,5 @@
 ---
-description: "Generate a retain exam JSON file from a name and domain breakdown. Use when: generate exam, create exam, new exam, create questions, generate questions."
+description: "Generate an exam JSON file for the retain CLI app from a name and domain breakdown. Use when: generate exam, create exam, new exam, create questions, generate questions."
 name: "Generate Exam"
 argument-hint: "Paste the exam name followed by each domain and its percentage on separate lines"
 agent: "agent"
@@ -18,6 +18,8 @@ Before generating anything, ask the user for the following if not already provid
      API Server
      Kubelet
    ```
+   - If a domain is missing its percentage, prompt the user to provide it before continuing.
+   - If sub-topics are omitted for a domain, set `subdomains` to an empty array `[]`.
 
 Once you have all three, generate the exam JSON.
 
@@ -39,19 +41,32 @@ Follow the structure in [examples/exam.json](../../examples/exam.json) exactly.
 - The TUI uses this to display the domain breakdown screen
 
 **`questions`**
+
+Quick-reference constraints:
+
+| Constraint | Rule |
+|---|---|
+| Total questions | 20 |
+| Distribution | Proportional to domain percentage; round half up to nearest whole number |
+| Types required | At least one `true_false`; lean on `single` and `multiple` |
+| Required fields | `id`, `type`, `text`, `correct_answers`, `explanation`, `domain` |
+| `options` | Required for `single`, `multiple`, `true_false` |
+| `true_false` options | Exactly `[{"id":"true","text":"True"},{"id":"false","text":"False"}]` |
+| `hints` | 1–2 per question |
+| `links` | At least one real documentation URL per question |
+
 - Generate **20 questions** total.
-- Distribute questions across domains proportionally to their percentages, rounding to the nearest whole number so the total stays at 20. Add the domain name as a `"domain"` field on each question.
+- Distribute questions across domains proportionally to their percentages, using standard rounding rules (round half up) to the nearest whole number so the total stays at 20. Add the domain name as a `"domain"` field on each question.
 - Within each domain, cover the listed sub-topics where possible.
-- Mix question types: lean on `single` and `multiple`, include at least one `true_false` and one `drag_drop` overall.
+- Mix question types: lean on `single` and `multiple`, include at least one `true_false` overall.
 - Every question must have: `id`, `type`, `text`, `correct_answers`, `explanation`, `domain`.
 - `options` required for `single`, `multiple`, `true_false`. For `true_false` options must be exactly `[{"id":"true","text":"True"},{"id":"false","text":"False"}]`.
-- `drag_drop` uses `items`, `targets`, and `correct_answers` as `[{"item":"...","target":"..."}]` — no `options` field.
 - Include 1–2 `hints` per question.
 - Include at least one `links` entry per question pointing to real documentation.
 
 **General**
 - Do not include a `config` or `state` block.
-- IDs: questions `q1`, `q2`, … — options `a`, `b`, `c`, … — drag-drop items/targets `i1`/`t1`, etc.
+- IDs: questions `q1`, `q2`, … — options `a`, `b`, `c`, …
 
 Output only the raw JSON. No explanation, no markdown fences.
 Save the file to `exams/<slug>.json`.
