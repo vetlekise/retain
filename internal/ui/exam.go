@@ -4,12 +4,12 @@ import (
 	"fmt"
 
 	tea "charm.land/bubbletea/v2"
-	lipgloss "charm.land/lipgloss/v2"
 	"github.com/vetlekise/retain/internal/session"
 )
 
 type ExamModel struct {
 	session   *session.Session
+	title     string
 	submitted bool            // has the current question been submitted?
 	pending   map[string]bool // option ID → selected
 	cursor    int
@@ -18,9 +18,10 @@ type ExamModel struct {
 	height    int
 }
 
-func NewExamModel(s *session.Session) ExamModel {
+func NewExamModel(s *session.Session, title string) ExamModel {
 	return ExamModel{
 		session: s,
+		title:   title,
 		pending: make(map[string]bool),
 	}
 }
@@ -70,20 +71,16 @@ func (m ExamModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				if m.session.CurrentIndex < len(m.session.Questions)-1 {
 					m.session.CurrentIndex++
-					m.pending = make(map[string]bool)
-					m.submitted = false
-					m.cursor = 0
-					m.showHint = false
+					m = m.restoreQuestion()
+				} else {
+					return NewSummaryModel(m.session, m.title), nil
 				}
 			}
 
 		case "p", "left":
 			if m.session.CurrentIndex > 0 {
 				m.session.CurrentIndex--
-				m.pending = make(map[string]bool)
-				m.submitted = false
-				m.cursor = 0
-				m.showHint = false
+				m = m.restoreQuestion()
 			}
 
 		case "h":
@@ -99,11 +96,18 @@ func (m ExamModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m ExamModel) View() tea.View {
 	q := m.session.Current()
 
-	header := fmt.Sprintf("Question %d of %d\n\n%s\n",
+	header := fmt.Sprintf("%s\n\nQuestion %d of %d\n\n%s\n",
+		titleStyle.Render(m.title),
 		m.session.CurrentIndex+1,
 		len(m.session.Questions),
 		q.Text,
 	)
+
+	// build a set of correct answer IDs for quick lookup
+	correctIDs := make(map[string]bool)
+	for _, id := range q.CorrectAnswers {
+		correctIDs[id] = true
+	}
 
 	options := ""
 	for i, opt := range q.Options {
@@ -117,7 +121,17 @@ func (m ExamModel) View() tea.View {
 			checked = "x"
 		}
 
-		options += fmt.Sprintf("%s [%s] %s\n", cursor, checked, opt.Text)
+		row := fmt.Sprintf("%s [%s] %s", cursor, checked, opt.Text)
+
+		if m.submitted {
+			if correctIDs[opt.ID] {
+				row = correctStyle.Render(row)
+			} else if m.pending[opt.ID] {
+				row = incorrectStyle.Render(row)
+			}
+		}
+
+		options += row + "\n"
 	}
 
 	middle := ""
@@ -133,12 +147,24 @@ func (m ExamModel) View() tea.View {
 	body := header + "\n" + options + middle
 
 	if m.width > 0 {
-		style := lipgloss.NewStyle().Width(m.width).Height(m.height-1).Padding(1, 2)
-		footerStyle := lipgloss.NewStyle().Width(m.width)
-		v := tea.NewView(style.Render(body) + "\n" + footerStyle.Render(footer))
+		v := tea.NewView(bodyStyle(m.width, m.height).Render(body) + "\n" + footerStyle(m.width).Render(footer))
 		v.AltScreen = true
 		return v
 	}
 
 	return tea.NewView(body + "\n" + footer + "\n")
+}
+
+// restoreQuestion resets cursor and showHint, then repopulates pending and
+// submitted from the session so previously answered questions are shown correctly.
+func (m ExamModel) restoreQuestion() ExamModel {
+	q := m.session.Current()
+	m.cursor = 0
+	m.showHint = false
+	m.submitted = m.session.IsAnswered(q.ID)
+	m.pending = make(map[string]bool)
+	for _, optID := range m.session.Answers[q.ID] {
+		m.pending[optID] = true
+	}
+	return m
 }

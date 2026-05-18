@@ -93,3 +93,10 @@ func (s *Session) Score() (correct, total int) {
 func (s *Session) Elapsed() time.Duration {
 	return time.Since(s.StartTime)
 }
+
+// Reset clears all answers and restarts the timer, keeping the same questions.
+func (s *Session) Reset() {
+	s.CurrentIndex = 0
+	s.Answers = make(map[string][]string)
+	s.StartTime = time.Now()
+}

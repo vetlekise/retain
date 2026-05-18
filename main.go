@@ -16,6 +16,11 @@ import (
 var examPath string
 
 func init() {
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage:\n  retain -exam <file.json>\n\nFlags:\n")
+		flag.PrintDefaults()
+		fmt.Fprintf(os.Stderr, "\nExample:\n  retain -exam examples/exam.json\n")
+	}
 	flag.StringVar(&examPath, "exam", "exam.json", "Path to your .json defined exam file.")
 	flag.Parse()
 }
@@ -36,7 +41,7 @@ func main() {
 
 	sess := session.New(ef)
 
-	p := tea.NewProgram(ui.NewExamModel(sess))
+	p := tea.NewProgram(ui.NewExamModel(sess, ef.Meta.Title))
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("error: %v\n", err)
 		os.Exit(1)
