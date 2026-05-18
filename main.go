@@ -16,6 +16,11 @@ import (
 var examPath string
 
 func init() {
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage:\n  retain -exam <file.json>\n\nFlags:\n")
+		flag.PrintDefaults()
+		fmt.Fprintf(os.Stderr, "\nExample:\n  retain -exam examples/exam.json\n")
+	}
 	flag.StringVar(&examPath, "exam", "exam.json", "Path to your .json defined exam file.")
 	flag.Parse()
 }
