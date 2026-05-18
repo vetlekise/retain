@@ -10,14 +10,16 @@ import (
 
 type SummaryModel struct {
 	session *session.Session
+	title   string
 	elapsed time.Duration
 	width   int
 	height  int
 }
 
-func NewSummaryModel(s *session.Session) SummaryModel {
+func NewSummaryModel(s *session.Session, title string) SummaryModel {
 	return SummaryModel{
 		session: s,
+		title:   title,
 		elapsed: s.Elapsed(),
 	}
 }
@@ -37,6 +39,9 @@ func (m SummaryModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
+		case "r":
+			m.session.Reset()
+			return NewExamModel(m.session, m.title), nil
 		}
 	}
 
@@ -62,7 +67,7 @@ func (m SummaryModel) View() tea.View {
 		body += fmt.Sprintf("%s  Q%d: %s\n", mark, i+1, q.Text)
 	}
 
-	footer := "q: quit"
+	footer := "r: retry · q: quit"
 
 	if m.width > 0 {
 		v := tea.NewView(bodyStyle(m.width, m.height).Render(body) + "\n" + footerStyle(m.width).Render(footer))

@@ -73,7 +73,7 @@ func (m ExamModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.session.CurrentIndex++
 					m = m.restoreQuestion()
 				} else {
-					return NewSummaryModel(m.session), nil
+					return NewSummaryModel(m.session, m.title), nil
 				}
 			}
 
