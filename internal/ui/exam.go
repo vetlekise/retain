@@ -103,6 +103,15 @@ func (m ExamModel) View() tea.View {
 		q.Text,
 	)
 
+	correctStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("2"))
+	incorrectStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("1"))
+
+	// build a set of correct answer IDs for quick lookup
+	correctIDs := make(map[string]bool)
+	for _, id := range q.CorrectAnswers {
+		correctIDs[id] = true
+	}
+
 	options := ""
 	for i, opt := range q.Options {
 		cursor := " "
@@ -115,7 +124,17 @@ func (m ExamModel) View() tea.View {
 			checked = "x"
 		}
 
-		options += fmt.Sprintf("%s [%s] %s\n", cursor, checked, opt.Text)
+		row := fmt.Sprintf("%s [%s] %s", cursor, checked, opt.Text)
+
+		if m.submitted {
+			if correctIDs[opt.ID] {
+				row = correctStyle.Render(row)
+			} else if m.pending[opt.ID] {
+				row = incorrectStyle.Render(row)
+			}
+		}
+
+		options += row + "\n"
 	}
 
 	middle := ""
