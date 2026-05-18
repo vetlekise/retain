@@ -3,11 +3,14 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log/slog"
 	"os"
 
+	tea "charm.land/bubbletea/v2"
 	"github.com/vetlekise/retain/internal/exam"
 	"github.com/vetlekise/retain/internal/session"
+	"github.com/vetlekise/retain/internal/ui"
 )
 
 var examPath string
@@ -31,5 +34,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	session.New(ef)
+	sess := session.New(ef)
+
+	p := tea.NewProgram(ui.NewExamModel(sess))
+	if _, err := p.Run(); err != nil {
+		fmt.Printf("error: %v\n", err)
+		os.Exit(1)
+	}
 }

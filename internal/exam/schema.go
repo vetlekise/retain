@@ -19,7 +19,7 @@ type Question struct {
 	Options        []Option `json:"options"`
 	CorrectAnswers []string `json:"correct_answers"`
 	Explanation    string   `json:"explanation"`
-	Hints          []string `json:"hints,omitempty"`
+	Hint           string   `json:"hint,omitempty"`
 }
 
 type Option struct {
