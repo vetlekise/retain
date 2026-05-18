@@ -9,11 +9,12 @@ import (
 )
 
 type SummaryModel struct {
-	session *session.Session
-	title   string
-	elapsed time.Duration
-	width   int
-	height  int
+	session      *session.Session
+	title        string
+	elapsed      time.Duration
+	scrollOffset int
+	width        int
+	height       int
 }
 
 func NewSummaryModel(s *session.Session, title string) SummaryModel {
@@ -42,6 +43,15 @@ func (m SummaryModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "r":
 			m.session.Reset()
 			return NewExamModel(m.session, m.title), nil
+		case "down", "j":
+			max := len(m.session.Questions) - 1
+			if m.scrollOffset < max {
+				m.scrollOffset++
+			}
+		case "up", "k":
+			if m.scrollOffset > 0 {
+				m.scrollOffset--
+			}
 		}
 	}
 
@@ -55,19 +65,41 @@ func (m SummaryModel) View() tea.View {
 		pct = correct * 100 / total
 	}
 
-	body := titleStyle.Render("Exam Complete") + "\n\n"
-	body += fmt.Sprintf("Score: %d/%d (%d%%)\n", correct, total, pct)
-	body += fmt.Sprintf("Time:  %s\n\n", m.elapsed.Round(time.Second))
+	header := titleStyle.Render("Exam Complete") + "\n\n"
+	header += fmt.Sprintf("Score: %d/%d (%d%%)\n", correct, total, pct)
+	header += fmt.Sprintf("Time:  %s\n\n", m.elapsed.Round(time.Second))
 
-	for i, q := range m.session.Questions {
+	footer := "j/k: scroll · r: retry · q: quit"
+
+	// 5 header lines + 2 padding (top+bottom) + 1 footer line
+	const fixedLines = 8
+	available := m.height - fixedLines
+	if available < 1 {
+		available = 1
+	}
+
+	questions := m.session.Questions
+	start := m.scrollOffset
+	end := start + available
+	if end > len(questions) {
+		end = len(questions)
+	}
+
+	rows := ""
+	for i := start; i < end; i++ {
+		q := questions[i]
 		mark := correctStyle.Render("✓")
 		if !m.session.IsCorrect(q.ID) {
 			mark = incorrectStyle.Render("✗")
 		}
-		body += fmt.Sprintf("%s  Q%d: %s\n", mark, i+1, q.Text)
+		rows += fmt.Sprintf("%s  Q%d: %s\n", mark, i+1, q.Text)
 	}
 
-	footer := "r: retry · q: quit"
+	if end < len(questions) {
+		rows += "↓ more\n"
+	}
+
+	body := header + rows
 
 	if m.width > 0 {
 		v := tea.NewView(bodyStyle(m.width, m.height).Render(body) + "\n" + footerStyle(m.width).Render(footer))
