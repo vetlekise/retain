@@ -72,6 +72,8 @@ func (m ExamModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.session.CurrentIndex < len(m.session.Questions)-1 {
 					m.session.CurrentIndex++
 					m = m.restoreQuestion()
+				} else {
+					return NewSummaryModel(m.session), nil
 				}
 			}
 
