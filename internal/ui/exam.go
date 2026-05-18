@@ -10,6 +10,7 @@ import (
 
 type ExamModel struct {
 	session   *session.Session
+	title     string
 	submitted bool            // has the current question been submitted?
 	pending   map[string]bool // option ID → selected
 	cursor    int
@@ -18,9 +19,10 @@ type ExamModel struct {
 	height    int
 }
 
-func NewExamModel(s *session.Session) ExamModel {
+func NewExamModel(s *session.Session, title string) ExamModel {
 	return ExamModel{
 		session: s,
+		title:   title,
 		pending: make(map[string]bool),
 	}
 }
@@ -99,7 +101,9 @@ func (m ExamModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m ExamModel) View() tea.View {
 	q := m.session.Current()
 
-	header := fmt.Sprintf("Question %d of %d\n\n%s\n",
+	titleStyle := lipgloss.NewStyle().Bold(true)
+	header := fmt.Sprintf("%s\n\nQuestion %d of %d\n\n%s\n",
+		titleStyle.Render(m.title),
 		m.session.CurrentIndex+1,
 		len(m.session.Questions),
 		q.Text,

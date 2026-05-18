@@ -36,7 +36,7 @@ func main() {
 
 	sess := session.New(ef)
 
-	p := tea.NewProgram(ui.NewExamModel(sess))
+	p := tea.NewProgram(ui.NewExamModel(sess, ef.Meta.Title))
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("error: %v\n", err)
 		os.Exit(1)
