@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	tea "charm.land/bubbletea/v2"
+	lipgloss "charm.land/lipgloss/v2"
 	"github.com/vetlekise/retain/internal/session"
 )
 
@@ -13,6 +14,8 @@ type ExamModel struct {
 	pending   map[string]bool // option ID → selected
 	cursor    int
 	showHint  bool
+	width     int
+	height    int
 }
 
 func NewExamModel(s *session.Session) ExamModel {
@@ -28,6 +31,11 @@ func (m ExamModel) Init() tea.Cmd {
 
 func (m ExamModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
+		return m, nil
+
 	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "ctrl+c", "q":
@@ -91,12 +99,13 @@ func (m ExamModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m ExamModel) View() tea.View {
 	q := m.session.Current()
 
-	s := fmt.Sprintf("Question %d of %d\n\n%s\n\n",
+	header := fmt.Sprintf("Question %d of %d\n\n%s\n",
 		m.session.CurrentIndex+1,
 		len(m.session.Questions),
 		q.Text,
 	)
 
+	options := ""
 	for i, opt := range q.Options {
 		cursor := " "
 		if m.cursor == i {
@@ -108,18 +117,28 @@ func (m ExamModel) View() tea.View {
 			checked = "x"
 		}
 
-		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, opt.Text)
+		options += fmt.Sprintf("%s [%s] %s\n", cursor, checked, opt.Text)
 	}
 
+	middle := ""
 	if m.showHint && !m.submitted && q.Hint != "" {
-		s += fmt.Sprintf("\nHint: %s\n", q.Hint)
+		middle += fmt.Sprintf("\nHint: %s\n", q.Hint)
 	}
-
 	if m.submitted {
-		s += fmt.Sprintf("\n%s\n", q.Explanation)
+		middle += fmt.Sprintf("\n%s\n", q.Explanation)
 	}
 
-	s += "\nspace: select · enter: submit · h: hint · p: back · q: quit\n"
+	footer := "space: select · enter: submit · h: hint · p: back · q: quit"
 
-	return tea.NewView(s)
+	body := header + "\n" + options + middle
+
+	if m.width > 0 {
+		style := lipgloss.NewStyle().Width(m.width).Height(m.height-1).Padding(1, 2)
+		footerStyle := lipgloss.NewStyle().Width(m.width)
+		v := tea.NewView(style.Render(body) + "\n" + footerStyle.Render(footer))
+		v.AltScreen = true
+		return v
+	}
+
+	return tea.NewView(body + "\n" + footer + "\n")
 }
