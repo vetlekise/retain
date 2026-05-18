@@ -52,7 +52,7 @@ Quick-reference constraints:
 | Required fields | `id`, `type`, `text`, `correct_answers`, `explanation`, `domain` |
 | `options` | Required for `single`, `multiple`, `true_false` |
 | `true_false` options | Exactly `[{"id":"true","text":"True"},{"id":"false","text":"False"}]` |
-| `hints` | 1–2 per question |
+| `hint` | 1 per question |
 | `links` | At least one real documentation URL per question |
 
 - Generate **20 questions** total.
@@ -61,7 +61,7 @@ Quick-reference constraints:
 - Mix question types: lean on `single` and `multiple`, include at least one `true_false` overall.
 - Every question must have: `id`, `type`, `text`, `correct_answers`, `explanation`, `domain`.
 - `options` required for `single`, `multiple`, `true_false`. For `true_false` options must be exactly `[{"id":"true","text":"True"},{"id":"false","text":"False"}]`.
-- Include 1–2 `hints` per question.
+- Include 1 `hint` per question.
 - Include at least one `links` entry per question pointing to real documentation.
 
 **General**
