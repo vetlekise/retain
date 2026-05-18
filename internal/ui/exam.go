@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	tea "charm.land/bubbletea/v2"
-	lipgloss "charm.land/lipgloss/v2"
 	"github.com/vetlekise/retain/internal/session"
 )
 
@@ -95,16 +94,12 @@ func (m ExamModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m ExamModel) View() tea.View {
 	q := m.session.Current()
 
-	titleStyle := lipgloss.NewStyle().Bold(true)
 	header := fmt.Sprintf("%s\n\nQuestion %d of %d\n\n%s\n",
 		titleStyle.Render(m.title),
 		m.session.CurrentIndex+1,
 		len(m.session.Questions),
 		q.Text,
 	)
-
-	correctStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("2"))
-	incorrectStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("1"))
 
 	// build a set of correct answer IDs for quick lookup
 	correctIDs := make(map[string]bool)
@@ -150,9 +145,7 @@ func (m ExamModel) View() tea.View {
 	body := header + "\n" + options + middle
 
 	if m.width > 0 {
-		style := lipgloss.NewStyle().Width(m.width).Height(m.height-1).Padding(1, 2)
-		footerStyle := lipgloss.NewStyle().Width(m.width)
-		v := tea.NewView(style.Render(body) + "\n" + footerStyle.Render(footer))
+		v := tea.NewView(bodyStyle(m.width, m.height).Render(body) + "\n" + footerStyle(m.width).Render(footer))
 		v.AltScreen = true
 		return v
 	}
