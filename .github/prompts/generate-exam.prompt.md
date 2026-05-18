@@ -59,6 +59,7 @@ Quick-reference constraints:
 - Distribute questions across domains proportionally to their percentages, using standard rounding rules (round half up) to the nearest whole number so the total stays at 20. Add the domain name as a `"domain"` field on each question.
 - Within each domain, cover the listed sub-topics where possible.
 - Mix question types: lean on `single` and `multiple`, include at least one `true_false` overall.
+- For `multiple` questions, the `text` must end with a parenthetical that states exactly how many options to choose, e.g. "(Choose two.)" or "(Choose three.)" — never leave the selection count ambiguous.
 - Every question must have: `id`, `type`, `text`, `correct_answers`, `explanation`, `domain`.
 - `options` required for `single`, `multiple`, `true_false`. For `true_false` options must be exactly `[{"id":"true","text":"True"},{"id":"false","text":"False"}]`.
 - Include 1 `hint` per question.
