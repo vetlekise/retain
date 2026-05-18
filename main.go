@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/vetlekise/retain/internal/exam"
+	"github.com/vetlekise/retain/internal/session"
 )
 
 var examPath string
@@ -24,9 +25,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	_, err = exam.LoadExam(data)
+	ef, err := exam.LoadExam(data)
 	if err != nil {
 		slog.Error("failed to load exam", "err", err)
 		os.Exit(1)
 	}
+
+	session.New(ef)
 }
