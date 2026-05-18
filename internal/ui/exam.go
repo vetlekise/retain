@@ -72,20 +72,14 @@ func (m ExamModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				if m.session.CurrentIndex < len(m.session.Questions)-1 {
 					m.session.CurrentIndex++
-					m.pending = make(map[string]bool)
-					m.submitted = false
-					m.cursor = 0
-					m.showHint = false
+					m = m.restoreQuestion()
 				}
 			}
 
 		case "p", "left":
 			if m.session.CurrentIndex > 0 {
 				m.session.CurrentIndex--
-				m.pending = make(map[string]bool)
-				m.submitted = false
-				m.cursor = 0
-				m.showHint = false
+				m = m.restoreQuestion()
 			}
 
 		case "h":
@@ -145,4 +139,18 @@ func (m ExamModel) View() tea.View {
 	}
 
 	return tea.NewView(body + "\n" + footer + "\n")
+}
+
+// restoreQuestion resets cursor and showHint, then repopulates pending and
+// submitted from the session so previously answered questions are shown correctly.
+func (m ExamModel) restoreQuestion() ExamModel {
+	q := m.session.Current()
+	m.cursor = 0
+	m.showHint = false
+	m.submitted = m.session.IsAnswered(q.ID)
+	m.pending = make(map[string]bool)
+	for _, optID := range m.session.Answers[q.ID] {
+		m.pending[optID] = true
+	}
+	return m
 }
