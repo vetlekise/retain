@@ -13,8 +13,8 @@ func LoadExam(file []byte) (ExamFile, error) {
 		return ExamFile{}, fmt.Errorf("failed to unmarshal: %w", err)
 	}
 
-	if err := Validate(ef); err != nil {
-		return ExamFile{}, fmt.Errorf("validation failed: %v", err)
+	if errs := Validate(ef); len(errs) > 0 {
+		return ExamFile{}, fmt.Errorf("validation failed: %v", errs)
 	}
 
 	return ef, nil
