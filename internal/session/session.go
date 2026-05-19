@@ -47,6 +47,8 @@ func equalUnordered(a, b []string) bool {
 	if len(a) != len(b) {
 		return false
 	}
+	// frequency map: increment for each element in a, decrement for each in b.
+	// If any count goes negative, b contains an element not in a.
 	counts := make(map[string]int)
 	for _, v := range a {
 		counts[v]++

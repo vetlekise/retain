@@ -8,14 +8,14 @@ import (
 )
 
 type ExamModel struct {
-	session   *session.Session
-	title     string
-	submitted bool            // has the current question been submitted?
-	pending   map[string]bool // option ID → selected
-	cursor    int
-	showHint  bool
-	width     int
-	height    int
+	session   *session.Session // pointer — shared, mutable
+	title     string           // exam title from meta.title
+	submitted bool             // has the current question been submitted?
+	pending   map[string]bool  // option ID → selected
+	cursor    int              // which option the > marker is on
+	showHint  bool             // is the hint visible?
+	width     int              // terminal width (from WindowSizeMsg)
+	height    int              // terminal height (from WindowSizeMsg)
 }
 
 func NewExamModel(s *session.Session, title string) ExamModel {
@@ -56,6 +56,8 @@ func (m ExamModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			optID := m.session.Current().Options[m.cursor].ID
 			m.pending[optID] = !m.pending[optID]
 
+		// enter is two-phase: first press submits the pending selection,
+		// second press advances to the next question or transitions to summary.
 		case "enter":
 			if !m.submitted {
 				q := m.session.Current()
@@ -67,7 +69,7 @@ func (m ExamModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				m.session.Answer(q.ID, selected)
 				m.submitted = true
-				m.showHint = false
+				m.showHint = false // clear hint so it doesn't carry over into the post-submit feedback state
 			} else {
 				if m.session.CurrentIndex < len(m.session.Questions)-1 {
 					m.session.CurrentIndex++
@@ -126,7 +128,7 @@ func (m ExamModel) View() tea.View {
 		if m.submitted {
 			if correctIDs[opt.ID] {
 				row = correctStyle.Render(row)
-			} else if m.pending[opt.ID] {
+			} else if m.pending[opt.ID] { // only selected wrong answers go red; unselected wrong options stay neutral
 				row = incorrectStyle.Render(row)
 			}
 		}
@@ -146,12 +148,15 @@ func (m ExamModel) View() tea.View {
 
 	body := header + "\n" + options + middle
 
+	// m.width is 0 until the first WindowSizeMsg arrives; guard against
+	// rendering a zero-width styled box on the very first frame.
 	if m.width > 0 {
 		v := tea.NewView(bodyStyle(m.width, m.height).Render(body) + "\n" + footerStyle(m.width).Render(footer))
 		v.AltScreen = true
 		return v
 	}
 
+	// pre-WindowSizeMsg fallback: plain output, no styling or AltScreen.
 	return tea.NewView(body + "\n" + footer + "\n")
 }
 

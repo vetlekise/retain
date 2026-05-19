@@ -9,18 +9,20 @@ import (
 )
 
 type SummaryModel struct {
-	session      *session.Session
-	title        string
-	elapsed      time.Duration
-	scrollOffset int
-	width        int
-	height       int
+	session      *session.Session // pointer — shared, mutable
+	title        string           // exam title from meta.title
+	elapsed      time.Duration    // time snapshot captured at transition, not live
+	scrollOffset int              // index of the first visible question row
+	width        int              // terminal width (from WindowSizeMsg)
+	height       int              // terminal height (from WindowSizeMsg)
 }
 
 func NewSummaryModel(s *session.Session, title string) SummaryModel {
 	return SummaryModel{
 		session: s,
 		title:   title,
+		// snapshot elapsed here so the summary shows the time at completion,
+		// not a live-ticking value that keeps growing while the user reads it.
 		elapsed: s.Elapsed(),
 	}
 }
@@ -44,6 +46,7 @@ func (m SummaryModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.session.Reset()
 			return NewExamModel(m.session, m.title), nil
 		case "down", "j":
+			// -1 so the last question is at most the first visible row, not scrolled off screen entirely
 			max := len(m.session.Questions) - 1
 			if m.scrollOffset < max {
 				m.scrollOffset++
@@ -71,7 +74,10 @@ func (m SummaryModel) View() tea.View {
 
 	footer := "j/k: scroll · r: retry · q: quit"
 
-	// 5 header lines + 2 padding (top+bottom) + 1 footer line
+	// fixedLines is the number of lines in the view that are not part of the
+	// scrollable question list: 2 title/blank, 1 score, 1 time, 1 blank (5
+	// header lines) + 1 top padding + 1 bottom padding + 1 footer = 8.
+	// Subtract from terminal height to get how many question rows fit on screen.
 	const fixedLines = 8
 	available := m.height - fixedLines
 	if available < 1 {
@@ -101,11 +107,14 @@ func (m SummaryModel) View() tea.View {
 
 	body := header + rows
 
+	// m.width is 0 until the first WindowSizeMsg arrives; guard against
+	// rendering a zero-width styled box on the very first frame.
 	if m.width > 0 {
 		v := tea.NewView(bodyStyle(m.width, m.height).Render(body) + "\n" + footerStyle(m.width).Render(footer))
 		v.AltScreen = true
 		return v
 	}
 
+	// pre-WindowSizeMsg fallback: plain output, no styling or AltScreen.
 	return tea.NewView(body + "\n" + footer + "\n")
 }
