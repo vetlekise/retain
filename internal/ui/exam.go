@@ -82,6 +82,12 @@ func (m ExamModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 
+		case "right":
+			if m.session.CurrentIndex < len(m.session.Questions)-1 {
+				m.session.CurrentIndex++
+				m = m.restoreQuestion()
+			}
+
 		case "p", "left":
 			if m.session.CurrentIndex > 0 {
 				m.session.CurrentIndex--
