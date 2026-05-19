@@ -67,6 +67,9 @@ func (m ExamModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						selected = append(selected, opt.ID)
 					}
 				}
+				if len(selected) == 0 {
+					break
+				}
 				m.session.Answer(q.ID, selected)
 				m.submitted = true
 				m.showHint = false // clear hint so it doesn't carry over into the post-submit feedback state
