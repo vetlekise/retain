@@ -46,7 +46,6 @@ archives:
 changelog:
   sort: asc
   use: github
-  abbrev_length: 0
   groups:
     - title: Features
       regexp: "^feat"
