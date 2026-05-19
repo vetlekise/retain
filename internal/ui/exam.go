@@ -153,7 +153,7 @@ func (m ExamModel) View() tea.View {
 		middle += fmt.Sprintf("\n%s\n", q.Explanation)
 	}
 
-	footer := "space: select · enter: submit · h: hint · p: back · q: quit"
+	footer := "space: select · enter: submit · h: hint · ←/→: navigate · q: quit"
 
 	body := header + "\n" + options + middle
 
