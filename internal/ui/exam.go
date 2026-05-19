@@ -67,6 +67,9 @@ func (m ExamModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						selected = append(selected, opt.ID)
 					}
 				}
+				if len(selected) == 0 {
+					break
+				}
 				m.session.Answer(q.ID, selected)
 				m.submitted = true
 				m.showHint = false // clear hint so it doesn't carry over into the post-submit feedback state
@@ -77,6 +80,12 @@ func (m ExamModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					return NewSummaryModel(m.session, m.title), nil
 				}
+			}
+
+		case "right":
+			if m.session.CurrentIndex < len(m.session.Questions)-1 {
+				m.session.CurrentIndex++
+				m = m.restoreQuestion()
 			}
 
 		case "p", "left":
@@ -144,7 +153,7 @@ func (m ExamModel) View() tea.View {
 		middle += fmt.Sprintf("\n%s\n", q.Explanation)
 	}
 
-	footer := "space: select · enter: submit · h: hint · p: back · q: quit"
+	footer := "space: select · enter: submit · h: hint · ←/→: navigate · q: quit"
 
 	body := header + "\n" + options + middle
 
