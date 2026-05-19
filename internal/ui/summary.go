@@ -21,6 +21,8 @@ func NewSummaryModel(s *session.Session, title string) SummaryModel {
 	return SummaryModel{
 		session: s,
 		title:   title,
+		// snapshot elapsed here so the summary shows the time at completion,
+		// not a live-ticking value that keeps growing while the user reads it.
 		elapsed: s.Elapsed(),
 	}
 }
@@ -44,6 +46,7 @@ func (m SummaryModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.session.Reset()
 			return NewExamModel(m.session, m.title), nil
 		case "down", "j":
+			// -1 so the last question is at most the first visible row, not scrolled off screen entirely
 			max := len(m.session.Questions) - 1
 			if m.scrollOffset < max {
 				m.scrollOffset++
@@ -104,11 +107,14 @@ func (m SummaryModel) View() tea.View {
 
 	body := header + rows
 
+	// m.width is 0 until the first WindowSizeMsg arrives; guard against
+	// rendering a zero-width styled box on the very first frame.
 	if m.width > 0 {
 		v := tea.NewView(bodyStyle(m.width, m.height).Render(body) + "\n" + footerStyle(m.width).Render(footer))
 		v.AltScreen = true
 		return v
 	}
 
+	// pre-WindowSizeMsg fallback: plain output, no styling or AltScreen.
 	return tea.NewView(body + "\n" + footer + "\n")
 }
