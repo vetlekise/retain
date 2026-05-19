@@ -8,14 +8,14 @@ import (
 )
 
 type ExamModel struct {
-	session   *session.Session
-	title     string
-	submitted bool            // has the current question been submitted?
-	pending   map[string]bool // option ID → selected
-	cursor    int
-	showHint  bool
-	width     int
-	height    int
+	session   *session.Session // pointer — shared, mutable
+	title     string           // exam title from meta.title
+	submitted bool             // has the current question been submitted?
+	pending   map[string]bool  // option ID → selected
+	cursor    int              // which option the > marker is on
+	showHint  bool             // is the hint visible?
+	width     int              // terminal width (from WindowSizeMsg)
+	height    int              // terminal height (from WindowSizeMsg)
 }
 
 func NewExamModel(s *session.Session, title string) ExamModel {
