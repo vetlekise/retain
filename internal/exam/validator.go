@@ -8,6 +8,10 @@ func Validate(ef ExamFile) []error {
 	var errs []error
 	seenIDs := make(map[string]bool)
 
+	if len(ef.Questions) == 0 {
+		return []error{fmt.Errorf("exam has no questions")}
+	}
+
 	for i, q := range ef.Questions {
 		if q.ID == "" {
 			errs = append(errs, fmt.Errorf("question %d: missing id", i))
