@@ -28,6 +28,7 @@ retain -exam <file.json>
 | `k` / `↑` | Move cursor up |
 | `space` | Toggle option |
 | `enter` | Submit answer / Next question |
+| `→` | Next question |
 | `p` / `←` | Previous question |
 | `h` | Show hint |
 | `q` / `ctrl+c` | Quit |
