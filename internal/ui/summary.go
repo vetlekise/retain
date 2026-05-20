@@ -72,7 +72,7 @@ func (m SummaryModel) View() tea.View {
 	header += fmt.Sprintf("Score: %d/%d (%d%%)\n", correct, total, pct)
 	header += fmt.Sprintf("Time:  %s\n\n", m.elapsed.Round(time.Second))
 
-	footer := "j/k: scroll · r: retry · q: quit"
+	footer := "↑/↓: scroll · r: retry · q: quit"
 
 	// fixedLines is the number of lines in the view that are not part of the
 	// scrollable question list: 2 title/blank, 1 score, 1 time, 1 blank (5
